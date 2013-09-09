@@ -134,4 +134,25 @@ class MageTest_Core_Model_App extends Mage_Core_Model_App
         $this->_dispatchedEvents = array();
         return $this;
     }
+
+	/**
+	 * Setter for private core parameter
+	 * 
+	 * @return $request MageTest_Controller_Request_HttpTestCase
+	 */
+	public function setRequest($request)
+	{
+		$this->_request = $request;
+	}
+
+	/**
+	 * Setter for private core parameter
+	 *
+	 * @return $response MageTest_Controller_Response_HttpTestCase
+	 */
+	public function setResponse($response)
+	{
+		$this->_response = $response;
+	}
+
 }
