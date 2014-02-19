@@ -28,7 +28,7 @@
  *
  * @author     MageTest team (https://github.com/MageTest/Mage-Test/contributors)
  */
-class MageTest_Bootstrap 
+class MageTest_Bootstrap
 {
     /**
      * Reflection class of Mage

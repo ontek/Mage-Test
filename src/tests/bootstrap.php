@@ -24,3 +24,13 @@ $_SERVER['MAGE_IS_DEVELOPER_MODE'] = true;
 
 // Initialize Mage_Log in case of an exception during autoloading a class
 Zend_Log::INFO;
+
+$includePath = array(
+    $d,
+    $d . 'tests/fixtures/',
+    get_include_path()
+);
+set_include_path(implode(PATH_SEPARATOR, $includePath));
+
+Varien_Autoload::register();
+

@@ -19,7 +19,7 @@
  *
  * @copyright  Copyright (c) 2012-2013 MageTest team and contributors.
  */
- 
+
 /**
  * MageTest_Util_Config
  *
@@ -30,9 +30,13 @@
  */
 class MageTest_Util_Config
 {
+	protected static $_newConfigValues = array();
+	protected static $_originalConfigValues = array();
+	protected static $_removedConfigValues = array();
+
     /**
      * Set an internal config value for Magento
-     * 
+     *
      * Orginal values will be stores internally and then restored after
      * all tests have been run with resetConfig().
      *
@@ -42,13 +46,13 @@ class MageTest_Util_Config
     public static function set($path, $value, $scope = null)
     {
         $configCollection = Mage::getModel('core/config_data')->getCollection();
-            
+
         $configCollection->addFieldToFilter('path', array("eq" => $path));
         if (is_string($scope)) {
             $configCollection->addFieldToFilter('scope', array("eq" => $scope));
         }
         $configCollection->load();
-        
+
         // If existing config does not exist create it
         if (count($configCollection) == 0) {
             $configData = Mage::getModel('core/config_data');
@@ -58,10 +62,10 @@ class MageTest_Util_Config
             $scope = ($scope)? $scope : 'default';
             $configData->setScope($scope);
             $configData->save();
-            $this->_newConfigValues[] = $configData;
-        } 
+            self::$_newConfigValues[] = $configData;
+        }
         foreach ($configCollection as $config) {
-            $this->_originalConfigValues[] = $config;
+            self::$_originalConfigValues[] = $config;
             $config->setValue($value);
             $config->save();
         }
@@ -69,11 +73,12 @@ class MageTest_Util_Config
             $configCollection,
             $configData
         );
+        Mage::getConfig()->cleanCache();
     }
-    
+
     /**
      * Remove an internal config value from Magento
-     * 
+     *
      * This mimics the fucntionality of the admin when you set a yes|no option
      * to no. Orginal values will be stores internally and then restored after
      * all tests have been run with resetConfig().
@@ -83,19 +88,20 @@ class MageTest_Util_Config
      **/
     public static function remove($path, $scope = null)
     {
-        $configCollection = Mage::getModel('core/config_data')->getCollection();  
+        $configCollection = Mage::getModel('core/config_data')->getCollection();
         $configCollection->addFieldToFilter('path', array("eq" => $path));
         if (is_string($scope)) {
             $configCollection->addFieldToFilter('scope', array("eq" => $scope));
         }
-        $configCollection->load();  
+        $configCollection->load();
         foreach ($configCollection as $config) {
-            $this->_removedConfigValues[] = $config;
+            self::$_removedConfigValues[] = $config;
             $config->delete();
         }
         unset($configCollection);
+        Mage::getConfig()->cleanCache();
     }
-    
+
     /**
      * Reset the Magento config to its original values.
      *
@@ -106,20 +112,21 @@ class MageTest_Util_Config
     {
         $config = Mage::getModel('core/config_data');
         // Reset the original values
-        foreach ($this->_originalConfigValues as $value) {
+
+        foreach (self::$_originalConfigValues as $value) {
             // $config->reset();
             $config->load($value->getId());
-            $config->setValue($value->getValue());
+            $config->setValue($value->getOrigData('value'));
             $config->save();
         }
         // Remove the new config valuse
-        foreach ($this->_newConfigValues as $value) {
+        foreach (self::$_newConfigValues as $value) {
             // $config->reset();
             $config->load($value->getId());
             $config->delete();
         }
         // Create the values that were removed
-        foreach ($this->_removedConfigValues as $value) {
+        foreach (self::$_removedConfigValues as $value) {
             // $config->reset();
             $config->setPath($value->getPath());
             $config->setValue($value->getValue());
@@ -128,11 +135,7 @@ class MageTest_Util_Config
             $config->setScope($scope);
             $config->save();
         }
-        unset(
-            $config,
-            $this->_originalConfigValues,
-            $this->_newConfigValues,
-            $this->_removedConfigValues
-        );
+        unset($config);
+        Mage::getConfig()->cleanCache();
     }
 }
