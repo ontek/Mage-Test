@@ -27,7 +27,7 @@ Zend_Log::INFO;
 
 $includePath = array(
     $d,
-    $d . 'tests/fixtures/',
+    $d . 'tests/helpers/',
     get_include_path()
 );
 set_include_path(implode(PATH_SEPARATOR, $includePath));
